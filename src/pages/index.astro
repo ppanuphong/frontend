@@ -1,5 +1,6 @@
 ---
-// index.astro - BDI KKU Automated AI NMR Spectroscopy Dashboard (Astro Version)
+import { NmrDashboard } from "../components/dashboard/NmrDashboard";
+import "../styles/globals.css";
 ---
 <html lang="en">
 <head>
@@ -12,928 +13,17 @@
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" is:inline></script>
 </head>
 <body>
+    <NmrDashboard />
 
-    <!-- BACKGROUND GRID -->
-    <div class="bg-grid" aria-hidden="true"></div>
-    <div class="bg-glow glow-1" aria-hidden="true"></div>
-    <div class="bg-glow glow-2" aria-hidden="true"></div>
-
-    <div class="app-shell">
-
-        <!-- ══════════════════ TOPBAR ══════════════════ -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <div class="brand-mark">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <circle cx="16" cy="16" r="14" stroke="url(#brandGrad)" stroke-width="2"/>
-                        <path d="M6 16 Q10 8 16 16 Q22 24 26 16" stroke="url(#brandGrad)" stroke-width="2" fill="none" stroke-linecap="round"/>
-                        <circle cx="16" cy="16" r="3" fill="url(#brandGrad)"/>
-                        <defs>
-                            <linearGradient id="brandGrad" x1="0" y1="0" x2="32" y2="32">
-                                <stop offset="0%" stop-color="#00D4FF"/>
-                                <stop offset="100%" stop-color="#7C3AED"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <span class="brand-name">NMR<span class="brand-accent">Suite</span></span>
-                    <span class="brand-sub">AI Metabolomics Diagnostic Platform · BDI KKU</span>
-                </div>
-            </div>
-            <div class="topbar-center">
-                <nav class="tab-nav">
-                    <button class="tab-btn active">Dashboard</button>
-                    <button class="tab-btn">Library</button>
-                    <button class="tab-btn">Reports</button>
-                </nav>
-            </div>
-            <div class="topbar-right">
-                <div class="status-pill">
-                    <span class="live-dot"></span>
-                    <span>Pipeline Live</span>
-                </div>
-                <div class="trl-badge">TRL 5+</div>
-            </div>
-        </header>
-
-        <!-- ══════════════════ BODY LAYOUT ══════════════════ -->
-        <div class="workspace">
-
-            <!-- ══ LEFT SIDEBAR ══ -->
-            <aside class="sidebar glass-panel">
-                <div class="sidebar-section">
-                    <p class="section-label">Sample Source</p>
-                    <div class="control-row">
-                        <label class="field-label" for="sample-select">Patient Profile</label>
-                        <div class="select-wrap">
-                            <select id="sample-select" class="field-select">
-                                <option value="Plant_Extract_A">Patient #001 — Sugarcane</option>
-                                <option value="Plant_Extract_B">Patient #002 — Coffee</option>
-                                <option value="Plant_Extract_C">Patient #003 — Soybean</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="control-row">
-                        <label class="field-label" for="file-upload">Upload NMR File</label>
-                        <label class="upload-zone" for="file-upload">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            <span>Drop CSV / TXT here</span>
-                            <input type="file" id="file-upload" class="hidden-input" accept=".csv,.txt" />
-                        </label>
-                    </div>
-                </div>
-
-                <div class="sidebar-divider"></div>
-
-                <div class="sidebar-section">
-                    <p class="section-label">Spectrometer Perturbations</p>
-
-                    <div class="control-row">
-                        <div class="slider-meta">
-                            <label class="field-label" for="noise-slider">Baseline Noise</label>
-                            <code class="slider-readout" id="noise-val">0.015</code>
-                        </div>
-                        <div class="slider-track-wrap">
-                            <input type="range" id="noise-slider" class="fancy-slider" min="0.005" max="0.08" step="0.005" value="0.015" />
-                        </div>
-                    </div>
-
-                    <div class="control-row">
-                        <div class="slider-meta">
-                            <label class="field-label" for="drift-slider">Chemical Shift Drift</label>
-                            <code class="slider-readout" id="drift-val">+0.015</code>
-                        </div>
-                        <div class="slider-track-wrap">
-                            <input type="range" id="drift-slider" class="fancy-slider" min="-0.04" max="0.04" step="0.005" value="0.015" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sidebar-divider"></div>
-
-                <div class="sidebar-section">
-                    <p class="section-label">Physics Constraint Gate</p>
-
-                    <div class="toggle-row">
-                        <label class="toggle-label" for="ghost-checkbox">
-                            <input type="checkbox" id="ghost-checkbox" class="sr-only" />
-                            <span class="toggle-switch"></span>
-                            <span class="toggle-text">Inject Ghost Peak</span>
-                        </label>
-                        <span class="toggle-hint">Simulates anomalous contaminant</span>
-                    </div>
-
-                    <div class="control-row">
-                        <div class="slider-meta">
-                            <label class="field-label" for="ebm-slider">EBM Energy Limit</label>
-                            <code class="slider-readout" id="ebm-val">1.1</code>
-                        </div>
-                        <div class="slider-track-wrap">
-                            <input type="range" id="ebm-slider" class="fancy-slider accent-purple" min="0.5" max="2.0" step="0.1" value="1.1" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sidebar-divider"></div>
-
-                <button id="analyze-btn" class="run-btn">
-                    <span class="run-btn-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="5 3 19 12 5 21 5 3"/>
-                        </svg>
-                    </span>
-                    <span class="btn-text">Run AI Diagnostic</span>
-                    <span class="btn-loader hidden"></span>
-                </button>
-            </aside>
-
-            <!-- ══ MAIN CONTENT ══ -->
-            <main class="main-pane">
-
-                <!-- SCORECARD ROW -->
-                <div class="kpi-row">
-                    <div class="kpi-card kpi-blue">
-                        <div class="kpi-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="kpi-label">Sample ID</span>
-                            <h4 class="kpi-value" id="scorecard-id">NMR-2026-X99</h4>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-purple">
-                        <div class="kpi-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="kpi-label">Screened Extract</span>
-                            <h4 class="kpi-value" id="scorecard-extract">Sugarcane Extract</h4>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-cyan">
-                        <div class="kpi-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="kpi-label">Analysis Status</span>
-                            <h4 class="kpi-value" id="scorecard-status">Pending</h4>
-                        </div>
-                    </div>
-                    <div class="kpi-card kpi-gray" id="scorecard-qc-box">
-                        <div class="kpi-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="kpi-label">Physics QC</span>
-                            <h4 class="kpi-value" id="scorecard-qc">UNVERIFIED</h4>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ALERT BANNER -->
-                <div id="alert-banner" class="alert-strip hidden">
-                    <div class="alert-icon-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                            <line x1="12" y1="9" x2="12" y2="13"/>
-                            <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
-                    </div>
-                    <div class="alert-body">
-                        <span class="alert-badge" id="alert-badge">ANOMALY</span>
-                        <strong class="alert-title" id="alert-title">Diagnostic Alert</strong>
-                        <p class="alert-desc" id="alert-desc">Alert details...</p>
-                    </div>
-                </div>
-
-                <!-- DUAL CHART WORKSPACE -->
-                <div class="chart-duo">
-                    <div class="chart-panel glass-panel">
-                        <div class="chart-header">
-                            <div>
-                                <h4 class="chart-title">Signal Overlay — Active Patient</h4>
-                                <span class="chart-sub">Drifted vs. Aligned · Interactive Zoom</span>
-                            </div>
-                            <span class="chart-tag">Pane A</span>
-                        </div>
-                        <div id="plotly-overlay" class="plotly-box" style="height:260px;"></div>
-                        <div class="zoom-label">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                <circle cx="11" cy="11" r="8"/>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                            </svg>
-                            <span id="zoom-region-label">High-Resolution Zoom — Sugar Region (3.2–4.5 ppm)</span>
-                        </div>
-                        <div id="plotly-zoom" class="plotly-box" style="height:140px;"></div>
-                    </div>
-
-                    <div class="chart-panel glass-panel">
-                        <div class="chart-header">
-                            <div>
-                                <h4 class="chart-title">Reference Library — Waterfall Stack</h4>
-                                <span class="chart-sub">Vertical offset per compound class</span>
-                            </div>
-                            <span class="chart-tag">Pane B</span>
-                        </div>
-                        <div id="plotly-waterfall" class="plotly-box" style="height:460px;"></div>
-                    </div>
-                </div>
-
-                <!-- BIOMARKER TABLE -->
-                <div class="data-panel glass-panel">
-                    <div class="data-panel-header">
-                        <div>
-                            <h4 class="panel-title">Identified Biomarkers</h4>
-                            <p class="panel-sub">Deconvolution of NMR peak integrals mapped to HMDB reference database</p>
-                        </div>
-                        <div class="table-chips">
-                            <span class="chip chip-cyan">HMDB</span>
-                            <span class="chip chip-gray">Quantitative</span>
-                        </div>
-                    </div>
-                    <div class="table-scroll">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Metabolite</th>
-                                    <th>Formula</th>
-                                    <th>HMDB Ref</th>
-                                    <th>Confidence</th>
-                                    <th>Rel. Concentration</th>
-                                </tr>
-                            </thead>
-                            <tbody id="biomarker-tbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADVANCED ACCORDION -->
-                <div class="accordion-panel glass-panel">
-                    <button class="accordion-header" id="accordion-toggle">
-                        <div class="accordion-header-left">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="2" y="3" width="6" height="6" rx="1"/>
-                                <rect x="16" y="3" width="6" height="6" rx="1"/>
-                                <rect x="9" y="9" width="6" height="6" rx="1"/>
-                                <rect x="2" y="15" width="6" height="6" rx="1"/>
-                                <rect x="16" y="15" width="6" height="6" rx="1"/>
-                            </svg>
-                            <span>Advanced AI Engine — ML Diagnostics Panel</span>
-                        </div>
-                        <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </button>
-
-                    <div class="accordion-body hidden" id="accordion-panel">
-                        <div class="accordion-section-label">Stage 1 & 2 · Latent Projection + Neural ODE</div>
-                        <div class="tech-grid-2">
-                            <div class="tech-tile">
-                                <h5 class="tech-tile-title">Latent Feature Activations (128-D)</h5>
-                                <div id="plotly-latent" style="height:200px;"></div>
-                            </div>
-                            <div class="tech-tile">
-                                <h5 class="tech-tile-title">ODE Integration Trajectory</h5>
-                                <div id="plotly-ode" style="height:200px;"></div>
-                            </div>
-                        </div>
-
-                        <div class="accordion-section-label" style="margin-top:24px;">Stage 3 & 4 · EBM Physics Engine + EMR Payload</div>
-                        <div class="tech-grid-ebm">
-                            <div class="tech-tile gauge-tile">
-                                <h5 class="tech-tile-title">EBM Energy Score</h5>
-                                <div class="gauge-ring-wrap">
-                                    <div class="gauge-ring" id="gauge-circle">
-                                        <div class="gauge-inner">
-                                            <span class="gauge-num" id="gauge-val">0.000</span>
-                                            <span class="gauge-tag" id="gauge-lbl">STABLE</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="tech-tile json-tile">
-                                <h5 class="tech-tile-title">Clinical EMR JSON Payload</h5>
-                                <pre class="json-viewer" id="json-payload">&#123; "status": "Run pipeline analysis to load hospital payload..." &#125;</pre>
-                                <button class="dl-btn" id="download-json-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                        <polyline points="7 10 12 15 17 10"/>
-                                        <line x1="12" y1="15" x2="12" y2="3"/>
-                                    </svg>
-                                    Download Clinical JSON
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="accordion-section-label" style="margin-top:24px;">Stage 5 · Model Benchmark · Classification Accuracy</div>
-                        <div class="tech-tile">
-                            <h5 class="tech-tile-title">ML Accuracy Comparison — Baseline vs. Hybrid Pipeline</h5>
-                            <div id="plotly-accuracy" style="height:240px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-            </main>
-        </div>
-    </div>
-
-    <!-- ══════════════════ DESIGN SYSTEM ══════════════════ -->
-    <style>
-        :root {
-            --bg:         #F4F8FC;
-            --bg-1:       #EAF1F8;
-            --bg-2:       #FFFFFF;
-            --surface:    #FFFFFF;
-            --surface-h:  #FFFFFF;
-            --border:     #E3E9F1;
-            --border-h:   #CBD5E1;
-
-            --cyan:       #0284C7;
-            --cyan-dim:   rgba(2,132,199,0.10);
-            --cyan-glow:  rgba(2,132,199,0.30);
-            --purple:     #7C3AED;
-            --purple-dim: rgba(124,58,237,0.10);
-            --emerald:    #059669;
-            --emerald-dim:rgba(5,150,105,0.12);
-            --amber:      #D97706;
-            --amber-dim:  rgba(217,119,6,0.12);
-            --red:        #DC2626;
-            --red-dim:    rgba(220,38,38,0.10);
-
-            --t1: #0F172A;
-            --t2: #475569;
-            --t3: #94A3B8;
-
-            --font:  'Inter', sans-serif;
-            --mono:  'JetBrains Mono', monospace;
-
-            --r-sm:  6px;
-            --r-md:  10px;
-            --r-lg:  14px;
-            --r-xl:  20px;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            background-color: var(--bg);
-            color: var(--t1);
-            font-family: var(--font);
-            font-size: 14px;
-            line-height: 1.6;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* ── BACKGROUND DECORATION ── */
-        .bg-grid {
-            position: fixed; inset: 0; pointer-events: none; z-index: 0;
-            background-image:
-                linear-gradient(rgba(15,23,42,0.035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(15,23,42,0.035) 1px, transparent 1px);
-            background-size: 48px 48px;
-        }
-
-        .bg-glow {
-            position: fixed; pointer-events: none; z-index: 0;
-            border-radius: 50%; filter: blur(120px);
-        }
-        .glow-1 {
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(2,132,199,0.08) 0%, transparent 70%);
-            top: -200px; right: -100px;
-        }
-        .glow-2 {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%);
-            bottom: -100px; left: -100px;
-        }
-
-        /* ── APP SHELL ── */
-        .app-shell {
-            position: relative; z-index: 1;
-            display: flex; flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* ── TOPBAR ── */
-        .topbar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 28px; height: 60px;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 100;
-            gap: 24px;
-        }
-
-        .topbar-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .topbar-center { flex: 1; display: flex; justify-content: center; }
-        .topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-
-        .brand-mark svg { display: block; }
-
-        .brand-name {
-            font-size: 18px; font-weight: 800;
-            letter-spacing: -0.03em; color: var(--t1);
-        }
-        .brand-accent {
-            background: linear-gradient(90deg, var(--cyan), var(--purple));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .brand-sub {
-            display: block; font-size: 11px; color: var(--t3);
-            letter-spacing: 0.01em; margin-top: 1px;
-        }
-
-        .tab-nav {
-            display: flex; gap: 2px;
-            background: var(--surface);
-            padding: 4px; border-radius: var(--r-md);
-            border: 1px solid var(--border);
-        }
-        .tab-btn {
-            background: none; border: none; color: var(--t3);
-            padding: 5px 16px; border-radius: var(--r-sm);
-            font-family: var(--font); font-size: 13px; font-weight: 500;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .tab-btn.active, .tab-btn:hover {
-            background: var(--cyan-dim); color: var(--t1);
-        }
-        .tab-btn.active { color: var(--cyan); }
-
-        .status-pill {
-            display: flex; align-items: center; gap: 7px;
-            background: var(--emerald-dim);
-            border: 1px solid rgba(16,185,129,0.25);
-            padding: 5px 13px; border-radius: 99px;
-            font-size: 12px; font-weight: 600; color: var(--emerald);
-        }
-        .live-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%; background: var(--emerald);
-            animation: pulse 1.8s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%,100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.4); }
-        }
-
-        .trl-badge {
-            background: var(--cyan-dim);
-            border: 1px solid rgba(0,212,255,0.25);
-            color: var(--cyan);
-            padding: 5px 12px; border-radius: 99px;
-            font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-        }
-
-        /* ── WORKSPACE LAYOUT ── */
-        .workspace {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-            padding: 20px 28px 40px;
-            align-items: start;
-        }
-
-        /* ── GLASS PANEL ── */
-        .glass-panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--r-xl);
-            box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.04);
-        }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            position: sticky; top: 80px;
-            padding: 20px;
-            display: flex; flex-direction: column; gap: 0;
-        }
-
-        .sidebar-section { padding: 4px 0 16px; }
-
-        .sidebar-divider {
-            height: 1px; background: var(--border); margin: 0 0 16px;
-        }
-
-        .section-label {
-            font-size: 10px; font-weight: 700;
-            letter-spacing: 0.1em; text-transform: uppercase;
-            color: var(--t3); margin-bottom: 12px;
-        }
-
-        .control-row { margin-bottom: 14px; }
-
-        .field-label {
-            display: block; font-size: 12px; font-weight: 600;
-            color: var(--t2); margin-bottom: 6px;
-        }
-
-        .select-wrap { position: relative; }
-        .select-wrap::after {
-            content: '';
-            position: absolute; right: 12px; top: 50%;
-            transform: translateY(-50%);
-            border: 5px solid transparent;
-            border-top-color: var(--t3);
-            margin-top: 2px; pointer-events: none;
-        }
-        .field-select {
-            width: 100%; appearance: none;
-            background: var(--bg-1);
-            border: 1px solid var(--border-h);
-            color: var(--t1); padding: 9px 36px 9px 12px;
-            border-radius: var(--r-md); font-family: var(--font);
-            font-size: 13px; cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .field-select:focus { outline: none; border-color: var(--cyan); }
-        .field-select option { background: #FFFFFF; color: var(--t1); }
-
-        .upload-zone {
-            display: flex; align-items: center; gap: 10px;
-            background: var(--bg-1);
-            border: 1px dashed var(--border-h);
-            border-radius: var(--r-md);
-            padding: 10px 14px; cursor: pointer; color: var(--t3);
-            font-size: 12px; font-weight: 500;
-            transition: all 0.2s;
-        }
-        .upload-zone:hover {
-            border-color: var(--cyan); color: var(--cyan);
-            background: var(--cyan-dim);
-        }
-        .hidden-input { display: none; }
-
-        /* Sliders */
-        .slider-meta {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 8px;
-        }
-        .slider-readout {
-            font-family: var(--mono); font-size: 12px;
-            font-weight: 600; color: var(--cyan);
-            background: var(--cyan-dim);
-            padding: 2px 7px; border-radius: 4px;
-        }
-        .slider-track-wrap { position: relative; }
-        .fancy-slider {
-            width: 100%; height: 4px;
-            -webkit-appearance: none; appearance: none;
-            background: #E2E8F0;
-            border-radius: 99px; outline: none; cursor: pointer;
-        }
-        .fancy-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px; height: 16px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--cyan), #0891B2);
-            box-shadow: 0 0 10px var(--cyan-glow);
-            transition: transform 0.15s;
-        }
-        .fancy-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
-        .fancy-slider.accent-purple::-webkit-slider-thumb {
-            background: linear-gradient(135deg, var(--purple), #6D28D9);
-            box-shadow: 0 0 10px var(--purple-dim);
-        }
-
-        /* Toggle */
-        .toggle-row { margin-bottom: 10px; }
-        .toggle-label {
-            display: flex; align-items: center; gap: 10px;
-            cursor: pointer; user-select: none;
-        }
-        .toggle-switch {
-            position: relative; width: 36px; height: 20px;
-            background: #CBD5E1;
-            border-radius: 99px; flex-shrink: 0;
-            transition: background 0.2s;
-        }
-        .toggle-switch::after {
-            content: '';
-            position: absolute; left: 3px; top: 3px;
-            width: 14px; height: 14px; border-radius: 50%;
-            background: var(--t3); transition: all 0.2s;
-        }
-        .sr-only:checked + .toggle-switch { background: var(--cyan); }
-        .sr-only:checked + .toggle-switch::after {
-            left: 19px; background: #fff;
-            box-shadow: 0 0 8px var(--cyan-glow);
-        }
-        .toggle-text { font-size: 12px; font-weight: 600; color: var(--t2); }
-        .toggle-hint {
-            font-size: 11px; color: var(--t3); margin-top: 4px; line-height: 1.4;
-        }
-
-        /* Run Button */
-        .run-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            width: 100%; padding: 12px 20px;
-            background: linear-gradient(135deg, #0369A1 0%, #7C3AED 100%);
-            border: none; border-radius: var(--r-md);
-            color: #fff; font-family: var(--font);
-            font-size: 14px; font-weight: 700;
-            cursor: pointer; position: relative; overflow: hidden;
-            transition: all 0.25s; box-shadow: 0 4px 24px rgba(0,212,255,0.2);
-        }
-        .run-btn::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-            opacity: 0; transition: opacity 0.2s;
-        }
-        .run-btn:hover::before { opacity: 1; }
-        .run-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(0,212,255,0.35); }
-        .run-btn:active { transform: translateY(0); }
-        .run-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .run-btn-icon { display: flex; align-items: center; }
-        .btn-loader {
-            width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── KPI ROW ── */
-        .kpi-row {
-            display: grid; grid-template-columns: repeat(4,1fr);
-            gap: 14px; margin-bottom: 20px;
-        }
-        .kpi-card {
-            display: flex; align-items: center; gap: 12px;
-            padding: 14px 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg);
-            transition: border-color 0.2s;
-        }
-        .kpi-card:hover { border-color: var(--border-h); }
-        .kpi-icon {
-            width: 36px; height: 36px; border-radius: var(--r-sm);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .kpi-blue .kpi-icon  { background: var(--cyan-dim); color: var(--cyan); }
-        .kpi-purple .kpi-icon{ background: var(--purple-dim); color: var(--purple); }
-        .kpi-cyan .kpi-icon  { background: var(--emerald-dim); color: var(--emerald); }
-        .kpi-gray .kpi-icon  { background: rgba(100,116,139,0.12); color: var(--t3); }
-
-        .kpi-label {
-            display: block; font-size: 10px; font-weight: 700;
-            letter-spacing: 0.08em; text-transform: uppercase; color: var(--t3);
-            margin-bottom: 2px;
-        }
-        .kpi-value {
-            font-size: 13px; font-weight: 700; color: var(--t1);
-            line-height: 1.2; font-family: var(--mono);
-        }
-
-        /* ── ALERT STRIP ── */
-        .alert-strip {
-            display: flex; align-items: flex-start; gap: 14px;
-            padding: 14px 18px; border-radius: var(--r-lg);
-            margin-bottom: 20px;
-            animation: slideDown 0.3s ease-out;
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .alert-strip.amber {
-            background: var(--amber-dim);
-            border: 1px solid rgba(245,158,11,0.25);
-        }
-        .alert-strip.emerald {
-            background: var(--emerald-dim);
-            border: 1px solid rgba(16,185,129,0.25);
-        }
-        .alert-icon-wrap { color: var(--amber); margin-top: 2px; flex-shrink: 0; }
-        .alert-strip.emerald .alert-icon-wrap { color: var(--emerald); }
-        .alert-badge {
-            display: inline-block; font-size: 10px; font-weight: 800;
-            letter-spacing: 0.08em; text-transform: uppercase;
-            padding: 2px 8px; border-radius: 4px; margin-bottom: 4px;
-            background: rgba(245,158,11,0.2); color: var(--amber);
-            border: 1px solid rgba(245,158,11,0.3);
-        }
-        .alert-strip.emerald .alert-badge {
-            background: rgba(16,185,129,0.2); color: var(--emerald);
-            border-color: rgba(16,185,129,0.3);
-        }
-        .alert-title { display: block; font-size: 14px; font-weight: 700; color: var(--t1); }
-        .alert-desc { font-size: 12px; color: var(--t2); margin-top: 2px; line-height: 1.5; }
-
-        /* ── CHART PANELS ── */
-        .chart-duo {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 16px; margin-bottom: 20px;
-        }
-        .chart-panel { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
-        .chart-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-        }
-        .chart-title {
-            font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 2px;
-        }
-        .chart-sub { font-size: 11px; color: var(--t3); }
-        .chart-tag {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-            background: var(--cyan-dim); color: var(--cyan);
-            padding: 3px 10px; border-radius: 99px;
-            border: 1px solid rgba(0,212,255,0.2);
-        }
-        .plotly-box {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border);
-            border-radius: var(--r-md); overflow: hidden;
-        }
-        .zoom-label {
-            display: flex; align-items: center; gap: 7px;
-            font-size: 12px; font-weight: 600; color: var(--cyan);
-        }
-
-        /* ── DATA TABLE ── */
-        .data-panel { padding: 20px; margin-bottom: 20px; }
-        .data-panel-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 16px;
-        }
-        .panel-title { font-size: 15px; font-weight: 700; color: var(--t1); }
-        .panel-sub { font-size: 12px; color: var(--t3); margin-top: 2px; }
-        .table-chips { display: flex; gap: 8px; align-items: center; }
-        .chip {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
-            padding: 3px 10px; border-radius: 99px;
-        }
-        .chip-cyan {
-            background: var(--cyan-dim); color: var(--cyan);
-            border: 1px solid rgba(0,212,255,0.25);
-        }
-        .chip-gray {
-            background: rgba(100,116,139,0.1); color: var(--t3);
-            border: 1px solid var(--border);
-        }
-        .table-scroll { overflow-x: auto; }
-        .data-table {
-            width: 100%; border-collapse: collapse; text-align: left;
-            font-size: 13px;
-        }
-        .data-table th {
-            font-size: 11px; font-weight: 700;
-            letter-spacing: 0.07em; text-transform: uppercase;
-            color: var(--t3); padding: 8px 14px;
-            border-bottom: 1px solid var(--border);
-            white-space: nowrap;
-        }
-        .data-table td {
-            padding: 11px 14px;
-            border-bottom: 1px solid var(--border);
-            color: var(--t2);
-        }
-        .data-table tr:hover td { background: var(--bg-1); }
-        .data-table td a {
-            color: var(--cyan); text-decoration: none; font-weight: 600;
-        }
-        .data-table td a:hover { text-decoration: underline; }
-        .progress-wrap { display: flex; align-items: center; gap: 10px; }
-        .progress-track {
-            flex: 1; height: 6px; border-radius: 99px;
-            background: #E2E8F0;
-            overflow: hidden;
-        }
-        .progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
-        .progress-num {
-            font-family: var(--mono); font-size: 11px;
-            color: var(--t3); width: 28px; text-align: right;
-        }
-
-        /* ── ACCORDION ── */
-        .accordion-panel { overflow: hidden; margin-bottom: 40px; }
-        .accordion-header {
-            width: 100%; background: none; border: none;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 18px 20px; cursor: pointer; color: var(--t2);
-            font-family: var(--font); font-size: 13px; font-weight: 600;
-            transition: color 0.2s;
-        }
-        .accordion-header:hover { color: var(--t1); }
-        .accordion-header-left { display: flex; align-items: center; gap: 10px; }
-        .accordion-chevron { transition: transform 0.25s; color: var(--t3); }
-        .accordion-header.open .accordion-chevron { transform: rotate(180deg); }
-        .accordion-body { padding: 0 20px 24px; border-top: 1px solid var(--border); }
-        .accordion-section-label {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-            text-transform: uppercase; color: var(--t3);
-            padding: 16px 0 12px;
-        }
-        .tech-grid-2 {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-        }
-        .tech-grid-ebm {
-            display: grid; grid-template-columns: 220px 1fr; gap: 14px;
-        }
-        .tech-tile {
-            background: var(--bg-1);
-            border: 1px solid var(--border);
-            border-radius: var(--r-lg); padding: 14px;
-        }
-        .tech-tile-title {
-            font-size: 11px; font-weight: 600; color: var(--t3);
-            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;
-        }
-
-        /* Gauge */
-        .gauge-tile { display: flex; flex-direction: column; }
-        .gauge-ring-wrap {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            padding: 16px 0;
-        }
-        .gauge-ring {
-            width: 120px; height: 120px; border-radius: 50%;
-            border: 8px solid #E2E8F0;
-            display: flex; align-items: center; justify-content: center;
-            transition: border-color 0.4s, box-shadow 0.4s;
-        }
-        .gauge-ring.stable {
-            border-color: var(--emerald);
-            box-shadow: 0 0 24px rgba(16,185,129,0.3);
-        }
-        .gauge-ring.violated {
-            border-color: var(--red);
-            box-shadow: 0 0 24px rgba(239,68,68,0.3);
-        }
-        .gauge-inner { text-align: center; }
-        .gauge-num {
-            display: block; font-family: var(--mono);
-            font-size: 22px; font-weight: 700; color: var(--t1);
-        }
-        .gauge-tag {
-            display: inline-block; font-size: 9px; font-weight: 800;
-            letter-spacing: 0.1em; text-transform: uppercase;
-            padding: 2px 8px; border-radius: 4px; margin-top: 4px;
-        }
-        .gauge-ring.stable  .gauge-tag { background: var(--emerald-dim); color: var(--emerald); }
-        .gauge-ring.violated .gauge-tag { background: var(--red-dim); color: var(--red); }
-
-        /* JSON panel */
-        .json-tile { display: flex; flex-direction: column; gap: 10px; }
-        .json-viewer {
-            font-family: var(--mono); font-size: 11.5px;
-            color: #0F2D52; background: #F1F6FB;
-            padding: 14px; border-radius: var(--r-md);
-            border: 1px solid var(--border);
-            overflow: auto; max-height: 170px; flex: 1;
-            line-height: 1.6;
-        }
-        .dl-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--bg-1);
-            border: 1px solid var(--border-h);
-            color: var(--t2); padding: 8px 14px;
-            border-radius: var(--r-md); font-family: var(--font);
-            font-size: 12px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .dl-btn:hover {
-            background: var(--cyan-dim); border-color: rgba(0,212,255,0.3);
-            color: var(--cyan);
-        }
-
-        .hidden { display: none !important; }
-        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-    </style>
-
-    <!-- ══════════════════ DASHBOARD SCRIPT ══════════════════ -->
     <script is:inline>
         document.addEventListener('DOMContentLoaded', () => {
-            // Static demo dataset — no backend required. Loaded once from public/nmr-demo.json
             let DEMO = null;
 
-            // Plotly dark theme shared config
             const PLOT_BG = 'rgba(0,0,0,0)';
-            const GRID    = 'rgba(15,23,42,0.07)';
-            const TICK    = '#64748B';
+            const GRID = 'rgba(15,23,42,0.07)';
+            const TICK = '#64748B';
             const baseLayout = (extra = {}) => ({
-                plot_bgcolor:  PLOT_BG,
+                plot_bgcolor: PLOT_BG,
                 paper_bgcolor: PLOT_BG,
                 font: { family: 'Inter, sans-serif', color: '#475569', size: 11 },
                 xaxis: { gridcolor: GRID, tickfont: { color: TICK }, zerolinecolor: GRID, ...extra.xaxis },
@@ -943,45 +33,42 @@
                 ...extra
             });
 
-            // DOM refs
-            const sampleSelect   = document.getElementById('sample-select');
-            const noiseSlider    = document.getElementById('noise-slider');
-            const noiseVal       = document.getElementById('noise-val');
-            const driftSlider    = document.getElementById('drift-slider');
-            const driftVal       = document.getElementById('drift-val');
-            const ghostCheckbox  = document.getElementById('ghost-checkbox');
-            const ebmSlider      = document.getElementById('ebm-slider');
-            const ebmVal         = document.getElementById('ebm-val');
-            const fileUpload     = document.getElementById('file-upload');
-            const analyzeBtn     = document.getElementById('analyze-btn');
-            const btnText        = analyzeBtn.querySelector('.btn-text');
-            const btnLoader      = analyzeBtn.querySelector('.btn-loader');
+            const sampleSelect = document.getElementById('sample-select');
+            const noiseSlider = document.getElementById('noise-slider');
+            const noiseVal = document.getElementById('noise-val');
+            const driftSlider = document.getElementById('drift-slider');
+            const driftVal = document.getElementById('drift-val');
+            const ghostCheckbox = document.getElementById('ghost-checkbox');
+            const ebmSlider = document.getElementById('ebm-slider');
+            const ebmVal = document.getElementById('ebm-val');
+            const fileUpload = document.getElementById('file-upload');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const btnText = analyzeBtn.querySelector('.btn-text');
+            const btnLoader = analyzeBtn.querySelector('.btn-loader');
             const scorecardExtract = document.getElementById('scorecard-extract');
-            const scorecardStatus  = document.getElementById('scorecard-status');
-            const scorecardQc      = document.getElementById('scorecard-qc');
-            const scorecardQcBox   = document.getElementById('scorecard-qc-box');
-            const alertBanner  = document.getElementById('alert-banner');
-            const alertBadge   = document.getElementById('alert-badge');
-            const alertTitle   = document.getElementById('alert-title');
-            const alertDesc    = document.getElementById('alert-desc');
-            const tbody        = document.getElementById('biomarker-tbody');
+            const scorecardStatus = document.getElementById('scorecard-status');
+            const scorecardQc = document.getElementById('scorecard-qc');
+            const alertBanner = document.getElementById('alert-banner');
+            const alertBadge = document.getElementById('alert-badge');
+            const alertTitle = document.getElementById('alert-title');
+            const alertDesc = document.getElementById('alert-desc');
+            const tbody = document.getElementById('biomarker-tbody');
             const accordionToggle = document.getElementById('accordion-toggle');
-            const accordionPanel  = document.getElementById('accordion-panel');
-            const gaugeCircle  = document.getElementById('gauge-circle');
-            const gaugeVal     = document.getElementById('gauge-val');
-            const gaugeLbl     = document.getElementById('gauge-lbl');
-            const jsonPayload  = document.getElementById('json-payload');
+            const accordionPanel = document.getElementById('accordion-panel');
+            const gaugeCircle = document.getElementById('gauge-circle');
+            const gaugeVal = document.getElementById('gauge-val');
+            const gaugeLbl = document.getElementById('gauge-lbl');
+            const jsonPayload = document.getElementById('json-payload');
             const downloadJsonBtn = document.getElementById('download-json-btn');
 
-            // ── Helpers ──
             function interpolate(x, y, targetX) {
                 return targetX.map(tx => {
                     if (tx <= x[0]) return y[0];
-                    if (tx >= x[x.length-1]) return y[y.length-1];
+                    if (tx >= x[x.length - 1]) return y[y.length - 1];
                     let i = 0;
-                    while (i < x.length-1 && x[i+1] < tx) i++;
-                    const t = (tx - x[i]) / (x[i+1] - x[i]);
-                    return y[i] + t * (y[i+1] - y[i]);
+                    while (i < x.length - 1 && x[i + 1] < tx) i++;
+                    const t = (tx - x[i]) / (x[i + 1] - x[i]);
+                    return y[i] + t * (y[i + 1] - y[i]);
                 });
             }
 
@@ -993,13 +80,86 @@
                     const idx = i * factor;
                     xs.push(x[idx]);
                     let mx = -Infinity;
-                    for (let j = 0; j < factor; j++) if (y[idx+j] > mx) mx = y[idx+j];
+                    for (let j = 0; j < factor; j++) if (y[idx + j] > mx) mx = y[idx + j];
                     ys.push(mx);
                 }
                 return { x: xs, y: ys };
             }
 
-            // ── File Upload ──
+            function buildZoomPeakLabelLayout(annotations, zMin, zMax, maxSignal) {
+                const peakMap = {};
+                annotations.forEach(annotation => {
+                    if (annotation.ppm_position < zMin || annotation.ppm_position > zMax) return;
+                    const current = peakMap[annotation.compound_name];
+                    if (!current || annotation.relative_intensity > current.relative_intensity) {
+                        peakMap[annotation.compound_name] = annotation;
+                    }
+                });
+
+                const limit = window.innerWidth < 768 ? 4 : 6;
+                const visiblePeaks = Object.values(peakMap)
+                    .sort((a, b) => b.relative_intensity - a.relative_intensity)
+                    .slice(0, limit)
+                    .sort((a, b) => a.ppm_position - b.ppm_position);
+
+                const safeSignalMax = Math.max(maxSignal || 0, 1);
+                const tierStep = safeSignalMax * 0.14;
+                const labelBase = safeSignalMax * 1.1;
+                const tierThreshold = (zMax - zMin) * (window.innerWidth < 768 ? 0.14 : 0.09);
+                const markerTrace = {
+                    x: [],
+                    y: [],
+                    mode: 'markers',
+                    marker: { color: '#F59E0B', size: 7, symbol: 'diamond' },
+                    hoverinfo: 'skip',
+                    showlegend: false
+                };
+                const shapes = [];
+                const plotAnnotations = [];
+                let previousPeak = null;
+
+                visiblePeaks.forEach(peak => {
+                    let tier = 0;
+                    if (previousPeak && Math.abs(peak.ppm_position - previousPeak.ppm_position) < tierThreshold) {
+                        tier = (previousPeak._tier + 1) % 3;
+                    }
+                    peak._tier = tier;
+                    previousPeak = peak;
+
+                    const stemTop = labelBase + tier * tierStep;
+                    markerTrace.x.push(peak.ppm_position);
+                    markerTrace.y.push(peak.relative_intensity);
+                    shapes.push({
+                        type: 'line',
+                        x0: peak.ppm_position,
+                        x1: peak.ppm_position,
+                        y0: peak.relative_intensity,
+                        y1: stemTop,
+                        line: { color: 'rgba(245, 158, 11, 0.85)', width: 1.2 }
+                    });
+                    plotAnnotations.push({
+                        x: peak.ppm_position,
+                        y: stemTop,
+                        text: peak.compound_name,
+                        showarrow: false,
+                        xanchor: 'center',
+                        yanchor: 'bottom',
+                        font: {
+                            family: 'JetBrains Mono, monospace',
+                            size: window.innerWidth < 768 ? 9 : 10,
+                            color: '#0F172A'
+                        },
+                        bgcolor: 'rgba(255,255,255,0.96)',
+                        bordercolor: 'rgba(245, 158, 11, 0.7)',
+                        borderwidth: 1,
+                        borderpad: 4
+                    });
+                });
+
+                const yUpper = visiblePeaks.length ? labelBase + tierStep * 2.6 : safeSignalMax * 1.18;
+                return { markerTrace, shapes, plotAnnotations, yUpper };
+            }
+
             async function handleFileUpload(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -1019,14 +179,14 @@
                                 }
                             }
                             if (data.length < 10) throw new Error("No valid (ppm, intensity) pairs found.");
-                            data.sort((a,b) => a.ppm - b.ppm);
+                            data.sort((a, b) => a.ppm - b.ppm);
                             const rx = data.map(d => d.ppm), ry = data.map(d => d.int);
-                            const tx = Array.from({length:4000}, (_,i) => 10*i/3999);
+                            const tx = Array.from({ length: 4000 }, (_, i) => 10 * i / 3999);
                             let ty = interpolate(rx, ry, tx);
                             const mx = Math.max(...ty);
-                            if (mx > 0) ty = ty.map(v => v/mx*3.5);
+                            if (mx > 0) ty = ty.map(v => v / mx * 3.5);
                             resolve({ ppm_axis: tx, raw_spectrum: ty, drifted_ppm: tx, annotations: [], sample_type: "Uploaded_NMR" });
-                        } catch(err) { reject(err); }
+                        } catch (err) { reject(err); }
                     };
                     reader.onerror = () => reject(new Error("File read error."));
                     reader.readAsText(file);
@@ -1035,8 +195,6 @@
 
             let activeData = null, currentPayload = null;
 
-            // ── Listeners ──
-            // Sliders are display-only in static-demo mode (spectra are pre-baked)
             noiseSlider.addEventListener('input', e => {
                 noiseVal.textContent = parseFloat(e.target.value).toFixed(3);
             });
@@ -1049,7 +207,7 @@
                 ebmVal.textContent = parseFloat(e.target.value).toFixed(1);
             });
             sampleSelect.addEventListener('change', () => {
-                const map = { Plant_Extract_A:"Sugarcane Extract", Plant_Extract_B:"Coffee Extract", Plant_Extract_C:"Soybean Extract" };
+                const map = { Plant_Extract_A: "Sugarcane Extract", Plant_Extract_B: "Coffee Extract", Plant_Extract_C: "Soybean Extract" };
                 scorecardExtract.textContent = map[sampleSelect.value];
                 loadActiveSample();
             });
@@ -1058,24 +216,22 @@
                 accordionPanel.classList.toggle('hidden');
             });
 
-            // ── Load Sample (from static demo data) ──
             function loadActiveSample() {
                 if (!DEMO) return;
                 const entry = DEMO[sampleSelect.value];
                 if (!entry) return;
                 const variant = ghostCheckbox.checked ? entry.ghost : entry.clean;
                 activeData = {
-                    sample_type:  sampleSelect.value,
-                    ppm_axis:     variant.ppm_axis,
+                    sample_type: sampleSelect.value,
+                    ppm_axis: variant.ppm_axis,
                     raw_spectrum: variant.raw_spectrum,
-                    drifted_ppm:  variant.ppm_axis,
-                    annotations:  entry.annotations
+                    drifted_ppm: variant.ppm_axis,
+                    annotations: entry.annotations
                 };
                 renderPlots();
                 renderBiomarkers();
             }
 
-            // ── Plots ──
             function renderPlots() {
                 if (!activeData) return;
                 const { ppm_axis, raw_spectrum, drifted_ppm, annotations, sample_type } = activeData;
@@ -1084,18 +240,24 @@
 
                 const peakMap = {};
                 annotations.forEach(a => {
-                    if (!peakMap[a.compound_name] || a.relative_intensity > peakMap[a.compound_name].i)
+                    if (!peakMap[a.compound_name] || a.relative_intensity > peakMap[a.compound_name].i) {
                         peakMap[a.compound_name] = { ppm: a.ppm_position, i: a.relative_intensity };
+                    }
                 });
 
                 Plotly.newPlot('plotly-overlay', [
-                    { x: dsRaw.x, y: dsRaw.y, mode:'lines', line:{ color:'rgba(239,68,68,0.55)', width:1.5 }, name:'Raw (Drifted)' },
-                    { x: dsAlg.x, y: dsAlg.y, mode:'lines', line:{ color:'#10B981', width:2 }, name:'Aligned' },
-                    { x: Object.values(peakMap).map(p=>p.ppm), y: Object.values(peakMap).map(p=>p.i),
-                      mode:'markers+text', text:Object.keys(peakMap), textposition:'top center',
-                      textfont:{ color:'#F59E0B', size:9, family:'JetBrains Mono' },
-                      marker:{ color:'#F59E0B', size:8, symbol:'triangle-up' }, name:'Biomarkers' }
-                ], baseLayout({ height:260, xaxis:{ title:'Chemical Shift (ppm)', autorange:'reversed' }, yaxis:{ title:'Intensity' } }));
+                    { x: dsRaw.x, y: dsRaw.y, mode: 'lines', line: { color: 'rgba(239,68,68,0.55)', width: 1.5 }, name: 'Raw (Drifted)' },
+                    { x: dsAlg.x, y: dsAlg.y, mode: 'lines', line: { color: '#10B981', width: 2 }, name: 'Aligned' },
+                    {
+                        x: Object.values(peakMap).map(p => p.ppm),
+                        y: Object.values(peakMap).map(p => p.i),
+                        mode: 'markers',
+                        customdata: Object.entries(peakMap).map(([name, peak]) => [name, peak.ppm, peak.i]),
+                        hovertemplate: '<b>%{customdata[0]}</b><br>ppm: %{customdata[1]:.2f}<br>Rel. intensity: %{customdata[2]:.2f}<extra></extra>',
+                        marker: { color: '#F59E0B', size: 8, symbol: 'triangle-up' },
+                        name: 'Biomarkers'
+                    }
+                ], baseLayout({ height: 260, xaxis: { title: 'Chemical Shift (ppm)', autorange: 'reversed' }, yaxis: { title: 'Intensity' } }));
 
                 const zoomRanges = {
                     Plant_Extract_A: [3.2, 4.5, 'Sugar Region (3.2–4.5 ppm)'],
@@ -1103,21 +265,31 @@
                     Plant_Extract_C: [0.8, 2.8, 'Aliphatic Region (0.8–2.8 ppm)']
                 };
                 const [zMin, zMax, zLabel] = zoomRanges[sample_type] || zoomRanges.Plant_Extract_A;
-                document.getElementById('zoom-region-label').textContent = `High-Resolution Zoom — ${zLabel}`;
+                document.getElementById('zoom-region-label').textContent = `Peak Label View — ${zLabel}`;
 
-                const zx=[], zy=[];
-                for (let i=0; i<drifted_ppm.length; i++) {
-                    if (drifted_ppm[i]>=zMin && drifted_ppm[i]<=zMax) { zx.push(drifted_ppm[i]); zy.push(raw_spectrum[i]); }
+                const zx = [], zy = [];
+                for (let i = 0; i < drifted_ppm.length; i++) {
+                    if (drifted_ppm[i] >= zMin && drifted_ppm[i] <= zMax) {
+                        zx.push(drifted_ppm[i]);
+                        zy.push(raw_spectrum[i]);
+                    }
                 }
                 const dsZ = downsample(zx, zy, 1000);
-                const zAnns = annotations.filter(a=>a.ppm_position>=zMin && a.ppm_position<=zMax)
-                    .sort((a,b)=>b.relative_intensity-a.relative_intensity).slice(0,6);
+                const zoomSignalMax = zy.length ? Math.max(...zy) : 1;
+                const zoomLabels = buildZoomPeakLabelLayout(annotations, zMin, zMax, zoomSignalMax);
+
                 Plotly.newPlot('plotly-zoom', [
-                    { x:dsZ.x, y:dsZ.y, mode:'lines', line:{ color:'#0284C7', width:2 }, name:'Zoom' },
-                    { x:zAnns.map(a=>a.ppm_position-parseFloat(driftSlider.value)), y:zAnns.map(a=>a.relative_intensity),
-                      mode:'markers+text', text:zAnns.map(a=>a.compound_name), textposition:'top center',
-                      textfont:{ color:'#F59E0B', size:9 }, marker:{ color:'#F59E0B', size:7, symbol:'triangle-up' } }
-                ], baseLayout({ height:140, xaxis:{ range:[zMax,zMin] }, yaxis:{ showticklabels:false }, showlegend:false, margin:{l:30,r:14,t:8,b:28} }));
+                    { x: dsZ.x, y: dsZ.y, mode: 'lines', line: { color: '#0284C7', width: 2 }, name: 'Zoom' },
+                    zoomLabels.markerTrace
+                ], baseLayout({
+                    height: window.innerWidth < 768 ? 170 : 190,
+                    xaxis: { range: [zMax, zMin] },
+                    yaxis: { showticklabels: false, range: [0, zoomLabels.yUpper] },
+                    showlegend: false,
+                    margin: { l: 30, r: 14, t: 36, b: 28 },
+                    shapes: zoomLabels.shapes,
+                    annotations: zoomLabels.plotAnnotations
+                }));
 
                 renderWaterfall();
             }
@@ -1133,14 +305,15 @@
                     const dsB = downsample(dB.ppm_axis, dB.raw_spectrum);
                     const dsC = downsample(dC.ppm_axis, dC.raw_spectrum);
                     Plotly.newPlot('plotly-waterfall', [
-                        { x:dsC.x, y:dsC.y.map(v=>v+2*off), mode:'lines', line:{color:'#8B5CF6',width:1.5}, name:'Soybean (Amino-Rich)' },
-                        { x:dsB.x, y:dsB.y.map(v=>v+off),   mode:'lines', line:{color:'#EC4899',width:1.5}, name:'Coffee (Aromatic-Rich)' },
-                        { x:dsA.x, y:dsA.y,                  mode:'lines', line:{color:'#10B981',width:1.5}, name:'Sugarcane (Sugar-Rich)' }
-                    ], baseLayout({ height:460, xaxis:{title:'Chemical Shift (ppm)',autorange:'reversed'}, yaxis:{title:'Intensity (Stacked)',showticklabels:false} }));
-                } catch(e) { console.error("Waterfall error:", e); }
+                        { x: dsC.x, y: dsC.y.map(v => v + 2 * off), mode: 'lines', line: { color: '#8B5CF6', width: 1.5 }, name: 'Soybean (Amino-Rich)' },
+                        { x: dsB.x, y: dsB.y.map(v => v + off), mode: 'lines', line: { color: '#EC4899', width: 1.5 }, name: 'Coffee (Aromatic-Rich)' },
+                        { x: dsA.x, y: dsA.y, mode: 'lines', line: { color: '#10B981', width: 1.5 }, name: 'Sugarcane (Sugar-Rich)' }
+                    ], baseLayout({ height: 460, xaxis: { title: 'Chemical Shift (ppm)', autorange: 'reversed' }, yaxis: { title: 'Intensity (Stacked)', showticklabels: false } }));
+                } catch (e) {
+                    console.error("Waterfall error:", e);
+                }
             }
 
-            // ── Biomarker Table ──
             function renderBiomarkers() {
                 if (!activeData) return;
                 const formulas = { Sucrose:"C12H22O11",Glucose:"C6H12O6",Fructose:"C6H12O6",Maltose:"C12H22O11",Xylose:"C5H10O5",Valine:"C5H11NO2",Leucine:"C6H13NO2",Isoleucine:"C6H13NO2",Alanine:"C3H7NO2",Threonine:"C4H9NO3",Citrate:"C6H8O7",Succinate:"C4H6O4",Glutamate:"C5H9NO4",Acetate:"C2H4O2",Formate:"CH2O2",Propionate:"C3H6O2",Chlorogenate:"C16H18O9",Tyrosine:"C9H11NO3",Phenylalanine:"C9H11NO2",Tryptophan:"C11H12N2O2",Histidine:"C6H9N3O2",Methanol:"CH4O",Ethanol:"C2H6O",Choline:"C5H13NO","O-Phosphocholine":"C5H13NO4P","4-Aminobutyrate":"C4H9NO2",Uridine:"C9H12N2O6",Nicotinate:"C6H5NO2" };
@@ -1148,22 +321,21 @@
 
                 const group = {};
                 activeData.annotations.forEach(a => {
-                    if (!group[a.compound_name] || a.relative_intensity > group[a.compound_name].relative_intensity)
-                        group[a.compound_name] = a;
+                    if (!group[a.compound_name] || a.relative_intensity > group[a.compound_name].relative_intensity) group[a.compound_name] = a;
                 });
 
                 tbody.innerHTML = '';
                 Object.keys(group).forEach(name => {
                     const weight = group[name].relative_intensity;
-                    const pct = Math.min(Math.floor((weight/2)*100), 100);
+                    const pct = Math.min(Math.floor((weight / 2) * 100), 100);
                     const color = pct > 75 ? '#10B981' : pct < 30 ? '#F59E0B' : '#00D4FF';
                     const dbId = hmdbIds[name] || 'HMDB0000000';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="font-weight:700;color:#0F172A;font-family:var(--mono);">${name}</td>
-                        <td style="font-family:var(--mono);color:#64748B;">${formulas[name]||'N/A'}</td>
+                        <td style="font-weight:700;color:#0F172A;font-family:var(--font-mono);">${name}</td>
+                        <td style="font-family:var(--font-mono);color:#64748B;">${formulas[name] || 'N/A'}</td>
                         <td><a href="https://hmdb.ca/metabolites/${dbId}" target="_blank">${dbId}</a></td>
-                        <td style="font-weight:700;color:#059669;font-family:var(--mono);">95%</td>
+                        <td style="font-weight:700;color:#059669;font-family:var(--font-mono);">95%</td>
                         <td>
                             <div class="progress-wrap">
                                 <div class="progress-track">
@@ -1176,23 +348,17 @@
                 });
             }
 
-            // ── Analyze ──
-            // Builds a deterministic mock pipeline result (no backend)
             function mockAnalysis() {
                 const ebmThreshold = parseFloat(ebmSlider.value);
                 const isGhost = ghostCheckbox.checked;
                 const rawEnergy = isGhost ? +(ebmThreshold + 0.4).toFixed(4) : 0.32;
-
-                // Deterministic latent activations + ODE trajectory (seeded by sample)
                 const seed = sampleSelect.value.charCodeAt(13) || 65;
-                const latent_features = Array.from({length:128}, (_,i) =>
-                    +(0.5 + 0.45 * Math.sin((i + seed) * 0.4) * Math.cos(i * 0.13)).toFixed(4));
+                const latent_features = Array.from({ length: 128 }, (_, i) => +(0.5 + 0.45 * Math.sin((i + seed) * 0.4) * Math.cos(i * 0.13)).toFixed(4));
                 const STEPS = 12;
-                const trajectory_steps = Array.from({length:STEPS}, (_,s) =>
-                    Array.from({length:128}, (_,d) =>
-                        +(latent_features[d] * (1 - s/STEPS) + 0.5 * (s/STEPS) +
-                          0.05 * Math.sin(s * 0.6 + d)).toFixed(4)));
-
+                const trajectory_steps = Array.from({ length: STEPS }, (_, s) =>
+                    Array.from({ length: 128 }, (_, d) =>
+                        +(latent_features[d] * (1 - s / STEPS) + 0.5 * (s / STEPS) + 0.05 * Math.sin(s * 0.6 + d)).toFixed(4))
+                );
                 const telemetry = {
                     pipeline: "3-Stage Hybrid (Transformer → Neural ODE → EBM)",
                     timestamp: new Date().toISOString(),
@@ -1206,12 +372,7 @@
                         biomarkers_identified: (DEMO?.[sampleSelect.value]?.annotations?.length) || 0
                     }]
                 };
-                return {
-                    telemetry,
-                    latent_features,
-                    trajectory_steps,
-                    diagnostics: { ghost_peak_detected: isGhost, raw_energy_score: rawEnergy }
-                };
+                return { telemetry, latent_features, trajectory_steps, diagnostics: { ghost_peak_detected: isGhost, raw_energy_score: rawEnergy } };
             }
 
             analyzeBtn.addEventListener('click', () => {
@@ -1219,7 +380,6 @@
                 btnText.textContent = "Processing...";
                 btnLoader.classList.remove('hidden');
                 analyzeBtn.disabled = true;
-                // brief delay so the loader is visible — feels like real inference
                 setTimeout(() => {
                     try {
                         const result = mockAnalysis();
@@ -1240,8 +400,9 @@
                             alertDesc.textContent = "NMR fingerprint satisfies all physics-chemical constraints. Aligned via Latent Neural ODE Solver. No anomalies identified.";
                         }
                         alertBanner.classList.remove('hidden');
-                    } catch(e) { console.error("Analyze error:", e); }
-                    finally {
+                    } catch (e) {
+                        console.error("Analyze error:", e);
+                    } finally {
                         btnText.textContent = "Run AI Diagnostic";
                         btnLoader.classList.add('hidden');
                         analyzeBtn.disabled = false;
@@ -1252,20 +413,22 @@
             function renderTechMetrics(result) {
                 const { latent_features, trajectory_steps, diagnostics } = result;
                 Plotly.newPlot('plotly-latent',
-                    [{ y:latent_features.slice(0,64), type:'bar', marker:{ color:'#10B981', opacity:0.8 } }],
-                    baseLayout({ height:200, xaxis:{title:'Latent Dim'}, yaxis:{title:'Activation'}, showlegend:false }));
+                    [{ y: latent_features.slice(0, 64), type: 'bar', marker: { color: '#10B981', opacity: 0.8 } }],
+                    baseLayout({ height: 200, xaxis: { title: 'Latent Dim' }, yaxis: { title: 'Activation' }, showlegend: false }));
 
-                const colors = ['#0284C7','#7C3AED','#DB2777','#059669'];
-                const dims = [4,18,42,88];
+                const colors = ['#0284C7', '#7C3AED', '#DB2777', '#059669'];
+                const dims = [4, 18, 42, 88];
                 const steps = trajectory_steps.length;
                 Plotly.newPlot('plotly-ode',
-                    dims.map((dim,idx) => ({
-                        x: Array.from({length:steps},(_,i)=>i),
-                        y: trajectory_steps.map(s=>s[dim]),
-                        mode:'lines+markers', line:{color:colors[idx],width:2},
-                        marker:{size:5}, name:`Dim ${dim}`
+                    dims.map((dim, idx) => ({
+                        x: Array.from({ length: steps }, (_, i) => i),
+                        y: trajectory_steps.map(s => s[dim]),
+                        mode: 'lines+markers',
+                        line: { color: colors[idx], width: 2 },
+                        marker: { size: 5 },
+                        name: `Dim ${dim}`
                     })),
-                    baseLayout({ height:200, xaxis:{title:'ODE Steps'}, yaxis:{title:'State'} }));
+                    baseLayout({ height: 200, xaxis: { title: 'ODE Steps' }, yaxis: { title: 'State' } }));
 
                 const energy = diagnostics.raw_energy_score;
                 gaugeVal.textContent = energy.toFixed(4);
@@ -1274,17 +437,16 @@
                 gaugeLbl.textContent = violated ? "ANOMALY" : "STABLE";
                 jsonPayload.textContent = JSON.stringify(result.telemetry, null, 2);
 
-                // Stage 5: ML model accuracy benchmark (baseline → hybrid)
                 const models = ['PLS-DA', 'SVM (RBF)', '1D-CNN', 'Transformer', 'NeuralODE+EBM'];
                 const baseAcc = [86.4, 89.1, 92.7, 95.3, 98.6];
-                // small physics-gate penalty when an anomaly is injected, recovered by the hybrid
-                const acc = baseAcc.map((v,i) => violated && i < 4 ? +(v - 3.2).toFixed(1) : v);
-                const barColors = models.map((_,i) => i === models.length-1 ? '#0284C7' : '#94A3B8');
+                const acc = baseAcc.map((v, i) => violated && i < 4 ? +(v - 3.2).toFixed(1) : v);
+                const barColors = models.map((_, i) => i === models.length - 1 ? '#0284C7' : '#94A3B8');
                 Plotly.newPlot('plotly-accuracy',
                     [{
                         x: acc, y: models, type: 'bar', orientation: 'h',
                         marker: { color: barColors },
-                        text: acc.map(v => v.toFixed(1) + '%'), textposition: 'auto',
+                        text: acc.map(v => v.toFixed(1) + '%'),
+                        textposition: 'auto',
                         textfont: { family: 'JetBrains Mono, monospace', size: 11 },
                         hovertemplate: '%{y}: %{x:.1f}%<extra></extra>'
                     }],
@@ -1296,53 +458,65 @@
                     }));
             }
 
-            downloadJsonBtn.addEventListener('click', () => {
-                if (!currentPayload) return;
-                const a = document.createElement('a');
-                a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentPayload, null, 2));
-                a.download = `clinical_report_${currentPayload.diagnostic_reports[0].sample_id}.json`;
-                document.body.appendChild(a); a.click(); a.remove();
-            });
-
             fileUpload.addEventListener('change', async e => {
-                const file = e.target.files[0]; if (!file) return;
-                btnText.textContent = "Parsing..."; analyzeBtn.disabled = true;
+                const file = e.target.files?.[0];
+                if (!file) return;
+                btnText.textContent = "Importing...";
+                analyzeBtn.disabled = true;
                 try {
                     activeData = await handleFileUpload(file);
-                    const dA = DEMO.Plant_Extract_A.clean, dB = DEMO.Plant_Extract_B.clean, dC = DEMO.Plant_Extract_C.clean;
-                    // Resample uploaded spectrum onto the reference ppm grid for correlation
-                    const uploadedOnGrid = interpolate(activeData.ppm_axis, activeData.raw_spectrum, dA.ppm_axis);
-                    function corr(x,y) {
-                        const n=x.length; let sx=0,sy=0,sxy=0,sx2=0,sy2=0;
-                        for (let i=0;i<n;i++) { sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];sy2+=y[i]*y[i]; }
-                        const num=n*sxy-sx*sy, den=Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));
-                        return den===0?0:num/den;
+                    if (DEMO) {
+                        const up = activeData.raw_spectrum;
+                        const dA = DEMO.Plant_Extract_A.clean, dB = DEMO.Plant_Extract_B.clean, dC = DEMO.Plant_Extract_C.clean;
+                        const corr = ref => {
+                            const a = up, b = ref.raw_spectrum;
+                            const n = Math.min(a.length, b.length);
+                            let ma = 0, mb = 0;
+                            for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }
+                            ma /= n; mb /= n;
+                            let num = 0, da = 0, db = 0;
+                            for (let i = 0; i < n; i++) {
+                                const xa = a[i] - ma, xb = b[i] - mb;
+                                num += xa * xb; da += xa * xa; db += xb * xb;
+                            }
+                            return num / Math.sqrt(da * db + 1e-12);
+                        };
+                        const cA = corr(dA), cB = corr(dB), cC = corr(dC);
+                        const best = [[cA, 'Plant_Extract_A', 'Sugarcane'], [cB, 'Plant_Extract_B', 'Coffee'], [cC, 'Plant_Extract_C', 'Soybean']].sort((a, b) => b[0] - a[0])[0];
+                        activeData.sample_type = best[1];
+                        activeData.annotations = DEMO[best[1]].annotations;
+                        scorecardExtract.textContent = `${best[2]} Extract`;
+                        alertBanner.className = "alert-strip emerald";
+                        alertBadge.textContent = "FILE MATCHED";
+                        alertTitle.textContent = `${file.name} — parsed successfully`;
+                        alertDesc.textContent = `Matched to ${best[2]} reference profile via Pearson correlation (${best[0].toFixed(3)}).`;
+                        alertBanner.classList.remove('hidden');
                     }
-                    const cA=corr(uploadedOnGrid,dA.raw_spectrum), cB=corr(uploadedOnGrid,dB.raw_spectrum), cC=corr(uploadedOnGrid,dC.raw_spectrum);
-                    const best = [[cA,'Plant_Extract_A','Sugarcane'],[cB,'Plant_Extract_B','Coffee'],[cC,'Plant_Extract_C','Soybean']].sort((a,b)=>b[0]-a[0])[0];
-                    activeData.sample_type = best[1];
-                    activeData.annotations = DEMO[best[1]].annotations;
-                    sampleSelect.value = best[1];
-                    scorecardExtract.textContent = `${best[2]} (${(best[0]*100).toFixed(0)}% match)`;
-                    renderPlots(); renderBiomarkers();
-                    alertBanner.className = "alert-strip emerald";
-                    alertBadge.textContent = "FILE LOADED";
-                    alertTitle.textContent = `${file.name} — parsed successfully`;
-                    alertDesc.textContent = `Interpolated to 4000 points. Matched to ${best[2]} at ${(best[0]*100).toFixed(1)}% fingerprint similarity.`;
-                    alertBanner.classList.remove('hidden');
-                } catch(err) {
-                    alertBanner.className = "alert-strip";
-                    alertBanner.style.background = "rgba(239,68,68,0.08)";
-                    alertBanner.style.borderColor = "rgba(239,68,68,0.25)";
-                    alertBadge.textContent = "PARSE ERROR"; alertTitle.textContent = "File Import Failed";
+                    renderPlots();
+                    renderBiomarkers();
+                } catch (err) {
+                    console.error("Upload error:", err);
+                    alertBanner.className = "alert-strip amber";
+                    alertBadge.textContent = "PARSE ERROR";
+                    alertTitle.textContent = "File Import Failed";
                     alertDesc.textContent = err.message;
                     alertBanner.classList.remove('hidden');
                 } finally {
-                    btnText.textContent = "Run AI Diagnostic"; analyzeBtn.disabled = false;
+                    btnText.textContent = "Run AI Diagnostic";
+                    analyzeBtn.disabled = false;
                 }
             });
 
-            // ── Boot: load static demo data, then render ──
+            downloadJsonBtn.addEventListener('click', () => {
+                if (!currentPayload) return;
+                const blob = new Blob([JSON.stringify(currentPayload, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `clinical_payload_${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+
             (async () => {
                 try {
                     const res = await fetch('/nmr-demo.json');
