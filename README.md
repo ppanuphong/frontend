@@ -44,25 +44,25 @@ frontend/
 ### 1. Installation of PNPM
 If pnpm is not installed on your system, install it via npm globally:
 ```powershell
-npm install -g pnpm
+git clone https://github.com/ppanuphong/frontend.git
 ```
 
 ### 2. Install Project Dependencies
 Run the install command inside the frontend directory:
 ```powershell
-pnpm install
+cd frontend
 ```
 
 ### 3. Run the Development Server
 Launch the local dev server on http://localhost:4321:
 ```powershell
-pnpm run dev
+npm install
 ```
 
 ### 4. Build for Production
 Create the optimized production build:
 ```powershell
-pnpm run build
+npm run dev
 ```
 
 ---
